@@ -5,7 +5,8 @@ export type RouteFlagName =
   | "Disabled"
   | "CacheQuery"
   | "OverrideQuery"
-  | "ProxyProtocol";
+  | "ProxyProtocol"
+  | "PreserveHost";
 
 const Empty = Type.Object({});
 const Id = Type.Object({ id: Type.Integer() });
@@ -17,6 +18,7 @@ const RouteFlag = Type.Union([
   Type.Literal("CacheQuery"),
   Type.Literal("OverrideQuery"),
   Type.Literal("ProxyProtocol"),
+  Type.Literal("PreserveHost"),
 ]);
 
 const RouteFlagsV2 = Type.Union([
