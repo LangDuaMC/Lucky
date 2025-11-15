@@ -1,9 +1,9 @@
 {
   "name": "Lucky",
-  "version": "1.0.50",
+  "version": "1.0.55",
   "scripts": {
-    "dev": "bun run --watch src/index.ts",
-    "build": "rm -rf dist && mkdir -p dist && bun build src/index.ts --compile --minify --target=bun-linux-x64 --outfile=dist/Lucky",
+    "dev": "bun run --watch src/lucky.ts",
+    "build": "rm -rf dist && mkdir -p dist && bun build src/lucky.ts --compile --minify --target=bun-linux-x64 --outfile=dist/Lucky",
     "fmt": "biome format --write"
   },
   "dependencies": {
