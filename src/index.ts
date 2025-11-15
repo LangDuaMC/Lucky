@@ -14,7 +14,7 @@ const POLL_DELAY_MS = 10;
 let time = 0;
 setInterval(() => {
   time = process.uptime();
-}, 15000);
+}, 500);
 
 export interface RecvProps {
   env: EnvelopeV2;
