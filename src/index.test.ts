@@ -1,14 +1,16 @@
-import { describe, expect, test } from "bun:test";
-import { startServer } from "./index";
+import { describe, it } from "bun:test";
+import { RecvProps, RouterService, RouterServiceConfig } from ".";
 
-describe("startServer", () => {
-  test("binds to an ephemeral port when requested", async () => {
-    const server = startServer({ port: 0, log: false });
-    try {
-      const port = server.server?.port ?? 0;
-      expect(port).toBeGreaterThan(0);
-    } finally {
-      await server.stop();
+describe("Ely", () => {
+  it("Properly config typecheck-pass", () => {
+    class UserRouter extends RouterServiceConfig {
+      recv({ env, inst }: RecvProps): void {
+        this.queue("user", {
+          _c: "Hello",
+        });
+      }
     }
+
+    const mksvc = RouterService(new UserRouter());
   });
 });
