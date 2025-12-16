@@ -1,5 +1,5 @@
 import createAccelerator from "json-accelerator";
-import { Static, TSchema, Type } from "@sinclair/typebox";
+import { type Static, type TSchema, Type } from "@sinclair/typebox";
 
 export type RouteFlagName =
   | "Disabled"

@@ -9,7 +9,7 @@ import {
   createEnvelopeV2,
   encodeEnvelopeV1,
   encodeEnvelopeV2,
-  RouteV2,
+  type RouteV2,
 } from "./event";
 import {
   envelopeV1FromV2,

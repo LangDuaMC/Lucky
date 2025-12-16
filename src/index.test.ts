@@ -1,5 +1,5 @@
 import { describe, it } from "bun:test";
-import { RecvProps, RouterService, RouterServiceConfig } from ".";
+import { type RecvProps, RouterService, RouterServiceConfig } from ".";
 
 describe("Ely", () => {
   it("Properly config typecheck-pass", () => {

@@ -9,7 +9,12 @@ import {
   routeV1FromV2,
   routeV2FromV1,
 } from "./compat";
-import { createEnvelopeV1, createEnvelopeV2, RouteV1, RouteV2 } from "./event";
+import {
+  createEnvelopeV1,
+  createEnvelopeV2,
+  type RouteV1,
+  type RouteV2,
+} from "./event";
 
 describe("route compatibility", () => {
   test("routeV2FromV1 transforms legacy flags", () => {
