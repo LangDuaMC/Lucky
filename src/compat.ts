@@ -87,6 +87,14 @@ export function envelopeV2FromV1(envelope: EnvelopeV1): EnvelopeV2 {
       return createEnvelopeV2("HandshakeRoute", { active: envelope.active });
     case "HandshakeIdent":
       return createEnvelopeV2("HandshakeIdent", { id: envelope.id });
+    case "ListSessionsRequest":
+      return createEnvelopeV2("ListSessionsRequest", { req: envelope.req });
+    case "ListSessionsResponse":
+      return createEnvelopeV2("ListSessionsResponse", envelope);
+    case "ListStatsRequest":
+      return createEnvelopeV2("ListStatsRequest", { req: envelope.req });
+    case "ListStatsResponse":
+      return createEnvelopeV2("ListStatsResponse", envelope);
     default:
       throw new Error(
         `Unsupported v1 envelope ${(envelope as { _c: string })._c}`,
@@ -112,6 +120,14 @@ export function envelopeV1FromV2(envelope: EnvelopeV2): EnvelopeV1 {
       return createEnvelopeV1("HandshakeRoute", { active: envelope.active });
     case "HandshakeIdent":
       return createEnvelopeV1("HandshakeIdent", { id: envelope.id });
+    case "ListSessionsRequest":
+      return createEnvelopeV1("ListSessionsRequest", { req: envelope.req });
+    case "ListSessionsResponse":
+      return createEnvelopeV1("ListSessionsResponse", envelope);
+    case "ListStatsRequest":
+      return createEnvelopeV1("ListStatsRequest", { req: envelope.req });
+    case "ListStatsResponse":
+      return createEnvelopeV1("ListStatsResponse", envelope);
     default:
       throw new Error(
         `Unsupported v2 envelope ${(envelope as { _c: string })._c}`,

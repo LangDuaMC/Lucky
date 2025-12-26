@@ -82,6 +82,9 @@ const delay = (delayInms: number) =>
 const EMPTY_STRING = "";
 const HEARTBEAT_SECONDS = 5;
 const POLL_DELAY_MS = 10;
+const BROADCAST_ALL = "*";
+const GROUP_PREFIX = "group:";
+const DEFAULT_LURE_GROUP = "default";
 
 let time = 0;
 setInterval(() => {
@@ -127,6 +130,44 @@ function toRouteV2(value: unknown): RouteV2 | null {
 
 function enqueue(instance: string, envelope: EnvelopeV2) {
   producer.add([instance, normalizeEnvelopeV2(envelope)]);
+}
+
+function enqueueToGroup(group: string, envelope: EnvelopeV2) {
+  producer.add([`${GROUP_PREFIX}${group}`, normalizeEnvelopeV2(envelope)]);
+}
+
+function parseInstanceGroups(value?: string | null): string[] {
+  if (!value) {
+    return [DEFAULT_LURE_GROUP];
+  }
+  const groups = value
+    .split(",")
+    .map((group) => group.trim())
+    .filter((group) => group.length > 0);
+  return groups.length > 0 ? Array.from(new Set(groups)) : [DEFAULT_LURE_GROUP];
+}
+
+function decodeGroupTarget(target: string): string | null {
+  if (!target.startsWith(GROUP_PREFIX)) {
+    return null;
+  }
+  const group = target.slice(GROUP_PREFIX.length).trim();
+  return group.length > 0 ? group : null;
+}
+
+function shouldDeliverTo(
+  target: string,
+  instance: string,
+  groups: string[],
+): boolean {
+  if (target === BROADCAST_ALL || target === instance) {
+    return true;
+  }
+  const group = decodeGroupTarget(target);
+  if (!group) {
+    return false;
+  }
+  return groups.includes(group);
 }
 
 async function bootstrapInstance(instance: string) {
@@ -181,9 +222,10 @@ function makeStreamHandler(encoder: StreamEncoder) {
     params,
   }: {
     set: any;
-    params: { instance: string };
+    params: { group: string };
   }) {
-    const instance = params.instance || "";
+    const group = params.group || "";
+    const groups = parseInstanceGroups(group);
     let heartbeatDeadline = time + HEARTBEAT_SECONDS;
     set.headers["X-Accel-Buffering"] = "no";
     set.headers["Content-Type"] = "text/event-stream";
@@ -200,7 +242,7 @@ function makeStreamHandler(encoder: StreamEncoder) {
       const item = consumer.peek();
       if (item) {
         const [target, rawEnvelope] = item;
-        if (target === instance) {
+        if (shouldDeliverTo(target, group, groups)) {
           const encoded = encoder(normalizeEnvelopeV2(rawEnvelope));
           if (encoded) {
             yield encoded;
@@ -231,26 +273,26 @@ const app = new Elysia()
       },
     ),
   })
-  .get("/api/v1/lure/:instance", makeStreamHandler(encodeForV1), {
+  .get("/api/v1/lure/:group", makeStreamHandler(encodeForV1), {
     params: t.Object({
-      instance: t.String(),
+      group: t.String(),
     }),
   })
-  .get("/api/v2/lure/:instance", makeStreamHandler(encodeForV2), {
+  .get("/api/v2/lure/:group", makeStreamHandler(encodeForV2), {
     params: t.Object({
-      instance: t.String(),
+      group: t.String(),
     }),
   })
   .post(
-    "/api/v1/lure/:instance",
+    "/api/v1/lure/:group",
     async ({ body, params }) => {
-      const instance = params.instance || "";
+      const group = params.group || "";
       const canonical = normalizeEnvelopeV2(envelopeV2FromV1(body));
-      return handleIncomingEnvelope(instance, canonical);
+      return handleIncomingEnvelope(group, canonical);
     },
     {
       params: t.Object({
-        instance: t.String(),
+        group: t.String(),
       }),
       response: {
         200: "status",
@@ -259,15 +301,15 @@ const app = new Elysia()
     },
   )
   .post(
-    "/api/v2/lure/:instance",
+    "/api/v2/lure/:group",
     async ({ body, params }) => {
-      const instance = params.instance || "";
+      const group = params.group || "";
       const canonical = normalizeEnvelopeV2(body);
-      return handleIncomingEnvelope(instance, canonical);
+      return handleIncomingEnvelope(group, canonical);
     },
     {
       params: t.Object({
-        instance: t.String(),
+        group: t.String(),
       }),
       response: {
         200: "status",

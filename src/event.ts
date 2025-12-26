@@ -13,6 +13,83 @@ const Id = Type.Object({ id: Type.Integer() });
 const RouteReport = Type.Object({ active: Type.Integer() });
 const HandshakeIdent = Type.Object({ id: Type.String() });
 
+const InspectRequest = Type.Object({
+  req: Type.Integer({ minimum: 0 }),
+});
+
+const SessionAttributes = Type.Object({}, { additionalProperties: true });
+
+const Profile = Type.Object({
+  name: Type.String(),
+  uuid: Type.Optional(Type.String()),
+});
+
+const TrafficCounters = Type.Object({
+  c2s_bytes: Type.Integer({ minimum: 0 }),
+  s2c_bytes: Type.Integer({ minimum: 0 }),
+  c2s_chunks: Type.Integer({ minimum: 0 }),
+  s2c_chunks: Type.Integer({ minimum: 0 }),
+  c2s_bps: Type.Integer({ minimum: 0 }),
+  s2c_bps: Type.Integer({ minimum: 0 }),
+});
+
+const SessionInspect = Type.Object({
+  id: Type.Integer({ minimum: 0 }),
+  zone: Type.Integer({ minimum: 0 }),
+  route_id: Type.Integer({ minimum: 0 }),
+  client_addr: Type.String(),
+  destination_addr: Type.String(),
+  hostname: Type.String(),
+  endpoint_host: Type.String(),
+  created_at_ms: Type.Integer({ minimum: 0 }),
+  last_activity_ms: Type.Integer({ minimum: 0 }),
+  traffic: TrafficCounters,
+  attributes: SessionAttributes,
+  profile: Profile,
+});
+
+const ListSessionsResponse = Type.Object({
+  req: Type.Integer({ minimum: 0 }),
+  _v: Type.Array(SessionInspect),
+});
+
+const InstanceStats = Type.Object({
+  inst: Type.String(),
+  uptime_ms: Type.Integer({ minimum: 0 }),
+  routes_active: Type.Integer({ minimum: 0 }),
+  sessions_active: Type.Integer({ minimum: 0 }),
+  traffic: TrafficCounters,
+});
+
+const RouteStats = Type.Object({
+  id: Type.Integer({ minimum: 0 }),
+  zone: Type.Integer({ minimum: 0 }),
+  active_sessions: Type.Integer({ minimum: 0 }),
+  traffic: TrafficCounters,
+});
+
+const TenantStats = Type.Object({
+  zone: Type.Integer({ minimum: 0 }),
+  active_sessions: Type.Integer({ minimum: 0 }),
+  traffic: TrafficCounters,
+});
+
+const StatsSnapshot = Type.Object({
+  req: Type.Integer({ minimum: 0 }),
+  instance: InstanceStats,
+  tenants: Type.Array(TenantStats),
+  routes: Type.Array(RouteStats),
+  sessions: Type.Array(
+    Type.Object({
+      id: Type.Integer({ minimum: 0 }),
+      zone: Type.Integer({ minimum: 0 }),
+      route_id: Type.Integer({ minimum: 0 }),
+      last_activity_ms: Type.Integer({ minimum: 0 }),
+      traffic: TrafficCounters,
+    }),
+  ),
+});
+
 const RouteFlag = Type.Union([
   Type.Literal("Disabled"),
   Type.Literal("CacheQuery"),
@@ -103,6 +180,10 @@ const CommandsV2 = {
   HandshakeIdent,
   ListRouteRequest: Empty,
   ListRouteResponse: RouteListV2,
+  ListSessionsRequest: InspectRequest,
+  ListSessionsResponse,
+  ListStatsRequest: InspectRequest,
+  ListStatsResponse: StatsSnapshot,
 } as const;
 
 type CommandsV2 = typeof CommandsV2;
@@ -116,6 +197,10 @@ const CommandsV1 = {
   HandshakeIdent,
   ListRouteRequest: Empty,
   ListRouteResponse: RouteListV1,
+  ListSessionsRequest: InspectRequest,
+  ListSessionsResponse,
+  ListStatsRequest: InspectRequest,
+  ListStatsResponse: StatsSnapshot,
 } as const;
 
 type CommandsV1 = typeof CommandsV1;
