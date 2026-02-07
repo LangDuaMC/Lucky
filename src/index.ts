@@ -124,7 +124,9 @@ export const RouterService = (cfg: RouterServiceConfig) =>
           if (item) {
             const [target, rawEnvelope] = item;
             if (shouldDeliverTo(target, instance, groups)) {
-              const encoded = encodeEnvelopeV2(normalizeEnvelopeV2(rawEnvelope));
+              const encoded = encodeEnvelopeV2(
+                normalizeEnvelopeV2(rawEnvelope),
+              );
               if (encoded) {
                 yield encoded;
               }

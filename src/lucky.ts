@@ -132,10 +132,6 @@ function enqueue(instance: string, envelope: EnvelopeV2) {
   producer.add([instance, normalizeEnvelopeV2(envelope)]);
 }
 
-function enqueueToGroup(group: string, envelope: EnvelopeV2) {
-  producer.add([`${GROUP_PREFIX}${group}`, normalizeEnvelopeV2(envelope)]);
-}
-
 function parseInstanceGroups(value?: string | null): string[] {
   if (!value) {
     return [DEFAULT_LURE_GROUP];

@@ -1,7 +1,8 @@
-import { createEnvelopeV1, createEnvelopeV2 } from "./event";
+import { createEnvelopeV1, createEnvelopeV2, createEnvelopeV3 } from "./event";
 import type {
   EnvelopeV1,
   EnvelopeV2,
+  EnvelopeV3,
   RouteFlagName,
   RouteV1,
   RouteV2,
@@ -161,6 +162,38 @@ export function normalizeEnvelopeV2(envelope: EnvelopeV2): EnvelopeV2 {
     case "ListRouteResponse":
       return createEnvelopeV2("ListRouteResponse", {
         _v: envelope._v.map((route) => normalizeRouteV2(route)),
+      });
+    default:
+      return envelope;
+  }
+}
+
+export function envelopeV3FromV2(envelope: EnvelopeV2): EnvelopeV3 {
+  // v3 is a superset of v2; all v2 commands map 1:1.
+  const { _c, ...payload } = envelope as any;
+  return createEnvelopeV3(_c as any, payload) as EnvelopeV3;
+}
+
+export function envelopeV2FromV3(envelope: EnvelopeV3): EnvelopeV2 {
+  // Drop v3-only commands when down-converting.
+  switch (envelope._c) {
+    case "FlushTunnelTokens":
+    case "SetTunnelToken":
+      throw new Error(`Unsupported v3 envelope ${envelope._c} for v2`);
+    default:
+      const { _c, ...payload } = envelope as any;
+      return createEnvelopeV2(_c as any, payload) as EnvelopeV2;
+  }
+}
+
+export function normalizeEnvelopeV3(envelope: EnvelopeV3): EnvelopeV3 {
+  // v3 keeps the v2 route payload format; normalize route payloads for stable encoding.
+  switch (envelope._c) {
+    case "SetRoute":
+      return createEnvelopeV3("SetRoute", normalizeRouteV2(envelope as any));
+    case "ListRouteResponse":
+      return createEnvelopeV3("ListRouteResponse", {
+        _v: (envelope as any)._v.map((route: RouteV2) => normalizeRouteV2(route)),
       });
     default:
       return envelope;

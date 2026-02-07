@@ -142,13 +142,15 @@ function schemaFor<T extends CommandsMap>(commands: T) {
   return Type.Union(entries, { title: "RPC Envelope" });
 }
 
-type EnvelopeOf<T extends CommandsMap> = Static<
-  ReturnType<typeof schemaFor<T>>
->;
+type CommandKey<T extends CommandsMap> = Extract<keyof T, string>;
+
+type EnvelopeOf<T extends CommandsMap> = {
+  [K in CommandKey<T>]: { _c: K } & Static<T[K]>;
+}[CommandKey<T>];
 
 type EnvelopeFactoryResult<T extends CommandsMap> = {
   schema: ReturnType<typeof schemaFor<T>>;
-  create: <K extends keyof T>(
+  create: <K extends CommandKey<T>>(
     command: K,
     payload: Static<T[K]>,
   ) => EnvelopeOf<T>;
@@ -188,6 +190,21 @@ const CommandsV2 = {
 
 type CommandsV2 = typeof CommandsV2;
 
+const TunnelToken = Type.Object({
+  key_id: Type.String(),
+  secret: Type.String(),
+  name: Type.Optional(Type.String()),
+  zone: Type.Optional(Type.Integer({ minimum: 0 })),
+});
+
+const CommandsV3 = {
+  ...CommandsV2,
+  FlushTunnelTokens: Empty,
+  SetTunnelToken: TunnelToken,
+} as const;
+
+type CommandsV3 = typeof CommandsV3;
+
 const CommandsV1 = {
   Hello: Empty,
   FlushRoute: Empty,
@@ -205,9 +222,12 @@ const CommandsV1 = {
 
 type CommandsV1 = typeof CommandsV1;
 
+const EnvelopeFactoryV3 = buildEnvelope(CommandsV3);
 const EnvelopeFactoryV2 = buildEnvelope(CommandsV2);
 const EnvelopeFactoryV1 = buildEnvelope(CommandsV1);
 
+export const EnvelopeV3 = EnvelopeFactoryV3.schema;
+export type EnvelopeV3 = EnvelopeOf<CommandsV3>;
 export const EnvelopeV2 = EnvelopeFactoryV2.schema;
 export type EnvelopeV2 = EnvelopeOf<CommandsV2>;
 export const EnvelopeV1 = EnvelopeFactoryV1.schema;
@@ -216,9 +236,11 @@ export type EnvelopeV1 = EnvelopeOf<CommandsV1>;
 export const Envelope = EnvelopeV2;
 export type Envelope = EnvelopeV2;
 
+export const encodeEnvelopeV3 = EnvelopeFactoryV3.encode;
 export const encodeEnvelopeV2 = EnvelopeFactoryV2.encode;
 export const encodeEnvelopeV1 = EnvelopeFactoryV1.encode;
 
+export const createEnvelopeV3 = EnvelopeFactoryV3.create;
 export const createEnvelopeV2 = EnvelopeFactoryV2.create;
 export const createEnvelopeV1 = EnvelopeFactoryV1.create;
 
