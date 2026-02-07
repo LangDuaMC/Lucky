@@ -14,6 +14,7 @@ const ROUTE_FLAG_BITS: Record<RouteFlagName, number> = {
   OverrideQuery: 1 << 2,
   ProxyProtocol: 1 << 3,
   PreserveHost: 1 << 4,
+  Tunnel: 1 << 5,
 };
 
 function flagsToBits(flags: RouteV2["flags"]): number {
