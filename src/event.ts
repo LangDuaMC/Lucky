@@ -199,10 +199,48 @@ const TunnelToken = Type.Object({
   zone: Type.Optional(Type.Integer({ minimum: 0 })),
 });
 
+const TunnelTokenInspect = Type.Object({
+  key_id: Type.String(),
+  zone: Type.Optional(Type.Integer({ minimum: 0 })),
+  name: Type.Optional(Type.String()),
+  created_ms_ago: Type.Integer({ minimum: 0 }),
+  last_used_ms_ago: Type.Integer({ minimum: 0 }),
+  has_agent: Type.Boolean(),
+});
+
+const TunnelAgentInspect = Type.Object({
+  key_id: Type.String(),
+  connected_ms_ago: Type.Integer({ minimum: 0 }),
+  offers_sent: Type.Integer({ minimum: 0 }),
+});
+
+const TunnelPendingInspect = Type.Object({
+  key_id: Type.String(),
+  target: Type.String(),
+  age_ms: Type.Integer({ minimum: 0 }),
+});
+
+const TunnelInspectSnapshot = Type.Object({
+  tokens_total: Type.Integer({ minimum: 0 }),
+  agents_total: Type.Integer({ minimum: 0 }),
+  pending_total: Type.Integer({ minimum: 0 }),
+  expired_total: Type.Integer({ minimum: 0 }),
+  tokens: Type.Array(TunnelTokenInspect),
+  agents: Type.Array(TunnelAgentInspect),
+  pending: Type.Array(TunnelPendingInspect),
+});
+
+const ListTunnelResponse = Type.Object({
+  req: Type.Integer({ minimum: 0 }),
+  snapshot: TunnelInspectSnapshot,
+});
+
 const CommandsV3 = {
   ...CommandsV2,
   FlushTunnelTokens: Empty,
   SetTunnelToken: TunnelToken,
+  ListTunnelRequest: InspectRequest,
+  ListTunnelResponse,
 } as const;
 
 type CommandsV3 = typeof CommandsV3;
