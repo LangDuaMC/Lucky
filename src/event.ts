@@ -42,6 +42,7 @@ const SessionInspect = Type.Object({
   destination_addr: Type.String(),
   hostname: Type.String(),
   endpoint_host: Type.String(),
+  tunnel: Type.Optional(Type.Boolean()),
   created_at_ms: Type.Integer({ minimum: 0 }),
   last_activity_ms: Type.Integer({ minimum: 0 }),
   traffic: TrafficCounters,
