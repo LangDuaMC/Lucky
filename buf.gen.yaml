@@ -1,0 +1,12 @@
+version: v2
+plugins:
+  # TypeScript: message types + Connect service
+  - remote: buf.build/bufbuild/es
+    out: src/generated
+  - remote: buf.build/connectrpc/es
+    out: src/generated
+  # Rust: for Lure to copy/download
+  - remote: buf.build/community/neoeinstein-prost
+    out: ../../../Lure/src/gen
+  - remote: buf.build/community/neoeinstein-tonic
+    out: ../../../Lure/src/gen

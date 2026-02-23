@@ -1,0 +1,129 @@
+syntax = "proto3";
+package lure.v1;
+
+import "google/protobuf/empty.proto";
+
+option go_package = "github.com/sulfur/lure/v1";
+
+service LureControl {
+  // Full-duplex: Lure connects, Luru sends control commands, Lure sends telemetry
+  rpc Connect(stream LureMessage) returns (stream ControlMessage);
+}
+
+// Lure → Luru
+message LureMessage {
+  oneof payload {
+    HandshakeIdent  handshake        = 1;
+    SessionsReport  sessions         = 2;
+    StatsReport     stats            = 3;
+    TunnelReport    tunnel           = 4;
+    RouteListResponse route_list     = 5;
+  }
+}
+
+// Luru → Lure
+message ControlMessage {
+  oneof payload {
+    Hello               hello               = 1;
+    SetRoute            set_route           = 2;
+    RemoveRoute         remove_route        = 3;
+    FlushRoutes         flush_routes        = 4;
+    SetTunnelToken      set_tunnel_token    = 5;
+    FlushTunnelTokens   flush_tunnel_tokens = 6;
+    ListRoutesRequest   list_routes         = 7;
+    ListSessionsRequest list_sessions       = 8;
+    ListStatsRequest    list_stats          = 9;
+    ListTunnelRequest   list_tunnel         = 10;
+  }
+}
+
+// --- Control messages (Luru → Lure) ---
+message Hello {}
+message FlushRoutes {}
+message FlushTunnelTokens {}
+message RemoveRoute { uint64 id = 1; }
+message ListRoutesRequest   { uint64 req = 1; }
+message ListSessionsRequest { uint64 req = 1; }
+message ListStatsRequest    { uint64 req = 1; }
+message ListTunnelRequest   { uint64 req = 1; }
+
+message SetRoute {
+  uint64          id        = 1;
+  uint64          zone      = 2;
+  int32           priority  = 3;
+  uint32          flags     = 4;
+  repeated string matchers  = 5;
+  repeated string endpoints = 6;
+}
+
+message SetTunnelToken {
+  string key_id  = 1;
+  string secret  = 2;
+  string name    = 3;
+  uint64 zone    = 4;
+}
+
+// --- Telemetry messages (Lure → Luru) ---
+message HandshakeIdent { string instance_id = 1; string group = 2; }
+
+message TrafficCounters {
+  uint64 c2s_bytes  = 1; uint64 s2c_bytes  = 2;
+  uint64 c2s_chunks = 3; uint64 s2c_chunks = 4;
+  uint64 c2s_bps    = 5; uint64 s2c_bps    = 6;
+}
+
+message SessionEntry {
+  uint64 id                 = 1;
+  uint64 zone               = 2;
+  uint64 route_id           = 3;
+  string client_addr        = 4;
+  string destination_addr   = 5;
+  string hostname           = 6;
+  string endpoint_host      = 7;
+  bool   tunnel             = 8;
+  uint64 created_at_ms      = 9;
+  uint64 last_activity_ms   = 10;
+  TrafficCounters traffic   = 11;
+  string profile_name       = 12;
+  string profile_uuid       = 13;
+}
+
+message SessionsReport { uint64 req = 1; repeated SessionEntry sessions = 2; }
+
+message InstanceStats {
+  string inst             = 1;
+  uint64 uptime_ms        = 2;
+  uint64 routes_active    = 3;
+  uint64 sessions_active  = 4;
+  TrafficCounters traffic = 5;
+}
+
+message RouteStats  { uint64 id = 1; uint64 zone = 2; uint64 active_sessions = 3; TrafficCounters traffic = 4; }
+message TenantStats { uint64 zone = 1; uint64 active_sessions = 2; TrafficCounters traffic = 3; }
+
+message StatsReport {
+  uint64 req                    = 1;
+  InstanceStats instance        = 2;
+  repeated TenantStats tenants  = 3;
+  repeated RouteStats routes    = 4;
+}
+
+message TunnelTokenInfo {
+  string key_id          = 1;
+  uint64 zone            = 2;
+  string name            = 3;
+  uint64 created_ms_ago  = 4;
+  uint64 last_used_ms_ago = 5;
+  bool   has_agent       = 6;
+}
+
+message TunnelReport {
+  uint64 req                          = 1;
+  uint64 tokens_total                 = 2;
+  uint64 agents_total                 = 3;
+  uint64 pending_total                = 4;
+  uint64 expired_total                = 5;
+  repeated TunnelTokenInfo tokens     = 6;
+}
+
+message RouteListResponse { uint64 req = 1; repeated SetRoute routes = 2; }
