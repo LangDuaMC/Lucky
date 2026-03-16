@@ -52,6 +52,19 @@ describe("route compatibility", () => {
     expect(legacy.override_query).toBe(false);
     expect(legacy.handshake).toBe("Vanilla");
   });
+
+  test("normalizeRouteV2 supports Redirection and AllowsLocal flag names", () => {
+    const routeV2: RouteV2 = normalizeRouteV2({
+      id: 12,
+      zone: 1,
+      priority: 1,
+      flags: ["Redirection", "AllowsLocal"],
+      matchers: ["/flag-test"],
+      endpoints: ["backend"],
+    });
+
+    expect(routeV2.flags).toBe(192);
+  });
 });
 
 describe("envelope compatibility", () => {
