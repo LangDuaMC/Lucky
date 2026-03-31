@@ -14,7 +14,10 @@ export type RouteFlagName =
 const Empty = Type.Object({});
 const Id = Type.Object({ id: Type.Integer() });
 const RouteReport = Type.Object({ active: Type.Integer() });
-const HandshakeIdent = Type.Object({ id: Type.String() });
+const HandshakeIdent = Type.Object({
+  id: Type.String(),
+  is_master: Type.Optional(Type.Boolean()),
+});
 
 const InspectRequest = Type.Object({
   req: Type.Integer({ minimum: 0 }),
@@ -54,6 +57,7 @@ const SessionInspect = Type.Object({
 
 const ListSessionsResponse = Type.Object({
   req: Type.Integer({ minimum: 0 }),
+  inst: Type.Optional(Type.String()),
   _v: Type.Array(SessionInspect),
 });
 
@@ -237,6 +241,7 @@ const TunnelInspectSnapshot = Type.Object({
 
 const ListTunnelResponse = Type.Object({
   req: Type.Integer({ minimum: 0 }),
+  inst: Type.Optional(Type.String()),
   snapshot: TunnelInspectSnapshot,
 });
 
